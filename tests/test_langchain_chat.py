@@ -33,7 +33,10 @@ messages = [
 results = []
 for i in range(1):
     start = time()
-    ai_msg = llm.invoke(messages)
+    ai_msg = llm.invoke(
+        messages, 
+        # stop=["\n"]
+    )
     elapsed = time() - start
     # get generated content
     result = ai_msg.content
@@ -43,10 +46,19 @@ for i in range(1):
     print(result)
     print("<<<<END")
     # print metadata to stderr
-    usage = ai_msg.response_metadata['token_usage']
-    print(usage, file=sys.stderr)
     print(f"elapsed time: {elapsed:.4f}s", file=sys.stderr)
-    print(f"avg time per token: {elapsed / usage['total_tokens'] * 1000:.2f}ms", file=sys.stderr)
+    try:
+        # format for GPT and Llama models
+        usage = ai_msg.response_metadata['token_usage']
+    except KeyError:
+        try:
+            # format for Gemini models
+            usage = ai_msg.usage_metadata
+        except:
+            usage = None
+    if usage is not None:
+        print(usage, file=sys.stderr)
+        print(f"avg time per token: {elapsed / usage['total_tokens'] * 1000:.2f}ms", file=sys.stderr)
     results.append(result)
 # print result lengths
 print([len(result) for result in results])

@@ -13,7 +13,14 @@ LLAMA_MODELS_LOCAL = [
     'llama-3-8b:local', 
     'llama-3-70b:local'
 ]
-ALL_MODELS = GPT_MODELS + LLAMA_MODELS + LLAMA_MODELS_LOCAL
+GEMINI_MODELS = [
+    'gemini-1.5-flash', 
+    'gemini-1.5-pro'
+]
+CLAUDE_MODELS = [
+    'claude-3-5-sonnet-20240620', 
+]
+ALL_MODELS = GPT_MODELS + LLAMA_MODELS + LLAMA_MODELS_LOCAL + GEMINI_MODELS
 
 # Helper function to get the LangChain chat model
 def get_llm(model_name="gpt-3.5-turbo", temperature=1., **kwargs):
@@ -59,6 +66,29 @@ def get_llm(model_name="gpt-3.5-turbo", temperature=1., **kwargs):
         )
     elif model_name in LLAMA_MODELS:
         raise NotImplementedError("todo: implement llama-3-8b and llama-3-70b via ChatTogether")
+    
+    elif model_name in GEMINI_MODELS:
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        llm = ChatGoogleGenerativeAI(
+            model=model_name,
+            temperature=temperature,
+            max_tokens=None,
+            timeout=None,
+            max_retries=2,
+            **kwargs,
+        )
+    
+    elif model_name in CLAUDE_MODELS:
+        from langchain_anthropic import ChatAnthropic
+        llm = ChatAnthropic(
+            model="claude-3-5-sonnet-20240620",
+            temperature=temperature,
+            # max_tokens=1024,
+            timeout=None,
+            max_retries=2,
+            # other params...
+        )
     else:
         raise ValueError(f"Unknown model name: {model_name}")
 
